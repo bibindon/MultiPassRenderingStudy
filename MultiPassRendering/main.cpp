@@ -445,8 +445,6 @@ void RenderPass2()
 {
     HRESULT hResult = E_FAIL;
 
-    // バックバッファに戻っている（RenderPass1 で旧RTへ復帰済み）
-    // 表示をクリア
     hResult = g_pd3dDevice->Clear(0,
                                   NULL,
                                   D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
@@ -462,7 +460,6 @@ void RenderPass2()
     hResult = g_pd3dDevice->BeginScene();
     assert(hResult == S_OK);
 
-    // simple2.fx（画面を赤くするPS）を使う
     hResult = g_pEffect2->SetTechnique("Technique1");
     assert(hResult == S_OK);
 
@@ -473,7 +470,6 @@ void RenderPass2()
     hResult = g_pEffect2->BeginPass(0);
     assert(hResult == S_OK);
 
-    // 将来テクスチャ参照したくなったときのために一応セット（今の simple2.fx では未使用）
     hResult = g_pEffect2->SetTexture("texture1", g_pRenderTarget);
     assert(hResult == S_OK);
 
@@ -491,7 +487,6 @@ void RenderPass2()
     hResult = g_pd3dDevice->EndScene();
     assert(hResult == S_OK);
 
-    // ここでPresent
     hResult = g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
     assert(hResult == S_OK);
 
