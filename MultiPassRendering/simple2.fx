@@ -13,38 +13,24 @@ sampler textureSampler = sampler_state {
 };
 
 void VertexShader1(in  float4 inPosition  : POSITION,
-                   in  float4 inNormal    : NORMAL0,
-                   in  float4 inTexCood   : TEXCOORD0,
+                   in  float2 inTexCood   : TEXCOORD0,
 
                    out float4 outPosition : POSITION,
-                   out float4 outDiffuse  : COLOR0,
-                   out float4 outTexCood  : TEXCOORD0)
+                   out float2 outTexCood  : TEXCOORD0)
 {
-    outPosition = mul(inPosition, g_matWorldViewProj);
-
-    float lightIntensity = dot(inNormal, g_lightNormal);
-    outDiffuse.rgb = max(0, lightIntensity) + g_ambient;
-    outDiffuse.a = 1.0f;
-
+    outPosition = inPosition;
     outTexCood = inTexCood;
 }
 
-void PixelShader1(in float4 inScreenColor : COLOR0,
+void PixelShader1(in float4 inPosition    : POSITION,
                   in float2 inTexCood     : TEXCOORD0,
 
                   out float4 outColor     : COLOR)
 {
     float4 workColor = (float4)0;
     workColor = tex2D(textureSampler, inTexCood);
-
-    if (g_bUseTexture)
-    {
-        outColor = inScreenColor * workColor;
-    }
-    else
-    {
-        outColor = inScreenColor;
-    }
+    outColor = workColor;
+    
 }
 
 technique Technique1
