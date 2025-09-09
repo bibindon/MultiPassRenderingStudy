@@ -7,9 +7,9 @@ bool g_bUseTexture = true;
 texture texture1;
 sampler textureSampler = sampler_state {
     Texture = (texture1);
-    MipFilter = LINEAR;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
+    MipFilter = NONE;
+    MinFilter = POINT;
+    MagFilter = POINT;
 };
 
 void VertexShader1(in  float4 inPosition  : POSITION,
