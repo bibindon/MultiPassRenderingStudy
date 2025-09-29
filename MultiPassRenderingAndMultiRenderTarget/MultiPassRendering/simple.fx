@@ -30,22 +30,6 @@ void VertexShader1(in float4 inPosition : POSITION,
     outTexCood = inTexCood;
 }
 
-void PixelShader1(in float4 inScreenColor : COLOR0,
-                  in float2 inTexCood : TEXCOORD0,
-                  out float4 outColor : COLOR)
-{
-    float4 workColor = tex2D(textureSampler, inTexCood);
-
-    if (g_bUseTexture)
-    {
-        outColor = inScreenColor * workColor;
-    }
-    else
-    {
-        outColor = inScreenColor;
-    }
-}
-
 // ==== 追加: MRT 用ピクセルシェーダ ====
 void PixelShaderMRT(in float4 inScreenColor : COLOR0,
                     in float2 inTexCood : TEXCOORD0,
@@ -59,7 +43,7 @@ void PixelShaderMRT(in float4 inScreenColor : COLOR0,
 
     // RT0 には通常の結果、RT1 にはテクスチャ（またはベース色）を出力
     outColor0 = baseColor;
-    outColor1 = g_bUseTexture ? sampled : baseColor;
+    outColor1 = float4(0.4, 0.5, 0.6, 1.0);
 }
 
 // ==== 追加: MRT を使うテクニック ====
