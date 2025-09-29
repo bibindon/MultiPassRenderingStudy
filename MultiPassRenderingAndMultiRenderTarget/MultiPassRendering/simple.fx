@@ -13,37 +13,43 @@ sampler textureSampler = sampler_state
     MagFilter = LINEAR;
 };
 
-void VertexShader1(in float4 inPosition : POSITION,
-                   in float4 inNormal : NORMAL0,
-                   in float4 inTexCood : TEXCOORD0,
-
-                   out float4 outPosition : POSITION,
-                   out float4 outDiffuse : COLOR0,
-                   out float4 outTexCood : TEXCOORD0)
+// ▼ 頂点シェーダー：clip空間の z/w を 0..1 にして渡す（非線形だが追加定数なしで簡単）
+void VertexShader1(
+    in float4 inPosition : POSITION,
+    in float3 inNormal : NORMAL,
+    in float2 inTexCoord0 : TEXCOORD0,
+    out float4 outPosition : POSITION0,
+    out float2 outTexCoord0 : TEXCOORD0,
+    out float outDepth01 : TEXCOORD1)
 {
-    outPosition = mul(inPosition, g_matWorldViewProj);
+    float4 clipPosition = mul(inPosition, g_matWorldViewProj);
+    outPosition = clipPosition;
+    outTexCoord0 = inTexCoord0;
 
-    float lightIntensity = dot(inNormal, g_lightNormal);
-    outDiffuse.rgb = max(0, lightIntensity) + g_ambient;
-    outDiffuse.a = 1.0f;
-
-    outTexCood = inTexCood;
+    // 0..1（近=0, 遠=1）
+    float depthNdc = clipPosition.z / clipPosition.w;
+    outDepth01 = saturate(depthNdc);
 }
 
-// ==== 追加: MRT 用ピクセルシェーダ ====
-void PixelShaderMRT(in float4 inScreenColor : COLOR0,
-                    in float2 inTexCood : TEXCOORD0,
-                    out float4 outColor0 : COLOR0,
-                    out float4 outColor1 : COLOR1)
+// ▼ ピクセルシェーダー：MRTのCOLOR1にグレースケールで深度を書き込む
+void PixelShaderMRT(
+    in float2 inTexCoord0 : TEXCOORD0,
+    in float inDepth01 : TEXCOORD1,
+    out float4 outColor0 : COLOR0,
+    out float4 outColor1 : COLOR1)
 {
-    float4 sampled = tex2D(textureSampler, inTexCood);
+    float4 baseColor = float4(0.5, 0.5, 0.5, 1.0);
 
-    // ベース色（ライティング * テクスチャ or テクスチャなし）
-    float4 baseColor = g_bUseTexture ? (inScreenColor * sampled) : inScreenColor;
+    if (g_bUseTexture)
+    {
+        baseColor = tex2D(textureSampler, inTexCoord0);
+    }
 
-    // RT0 には通常の結果、RT1 にはテクスチャ（またはベース色）を出力
     outColor0 = baseColor;
-    outColor1 = float4(0.4, 0.5, 0.6, 1.0);
+
+    // 近いほど黒、遠いほど白
+    float d = inDepth01;
+    outColor1 = float4(d, d, d, 1.0);
 }
 
 // ==== 追加: MRT を使うテクニック ====
